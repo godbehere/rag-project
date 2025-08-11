@@ -1,24 +1,24 @@
 import express from 'express';
 import { Queue } from 'bullmq';
 import Redis from 'ioredis';
-import dotenv from 'dotenv';
 import ingestionRoutes from './routes/ingestionRoutes';
+import retrievalRoutes from './routes/retrievalRoutes';
 
-dotenv.config();
+import { config } from '../config';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
+export const ingestionQueue = new Queue(config.queueNames.doc, { connection });
 
-const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-export const ingestionQueue = new Queue('ingestion', { connection });
 
 app.use(express.json());
 app.use('/api', ingestionRoutes);
+app.use('/api', retrievalRoutes);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.listen(config.port, () => {
+  console.log(`Server running on http://localhost:${config.port}`);
 });

@@ -1,0 +1,23 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
+function requireEnv(name: string, fallback?: string): string {
+	const value = process.env[name] ?? fallback;
+	if (!value) {
+		throw new Error(`Missing required environment variable: ${name}`);
+	}
+	return value;
+}
+
+export const config = {
+	redisUrl: requireEnv('REDIS_URL', 'redis://localhost:6379'),
+	openaiApiKey: requireEnv('OPENAI_API_KEY'),
+	embeddingModel: process.env.EMBEDDING_MODEL || 'text-embedding-3-small',
+	queueNames: {
+		ingestion: process.env.QUEUE_INGESTION || 'ingestion',
+		doc: process.env.QUEUE_DOC || 'ingest-doc',
+		chunk: process.env.QUEUE_CHUNK || 'ingest-chunk',
+	},
+	port: parseInt(process.env.PORT || '3000', 10),
+	concurrency: parseInt(process.env.WORKER_CONCURRENCY || '2', 10),
+};

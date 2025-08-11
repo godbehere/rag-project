@@ -1,30 +1,74 @@
-import { Worker } from 'bullmq';
+import { Worker, Queue } from 'bullmq';
 import Redis from 'ioredis';
-import dotenv from 'dotenv';
 import { chunkText } from '../ingestion/chunker';
-import { MemoryVectorStore } from '../vectorstore/adapters/memoryStore';
-import { OpenAIProvider } from '../embeddings/openaiProvider';
-import { v4 as uuidv4 } from 'uuid';
+import { store, embedder } from '../config/vector';
+import { Chunk } from '../types';
+import { config } from '../config';
 
-dotenv.config();
+const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
 
-const connection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-const store = new MemoryVectorStore();
-const embedder = new OpenAIProvider(process.env.OPENAI_API_KEY || '', process.env.EMBEDDING_MODEL);
+const ingestionQueue = new Queue(config.queueNames.ingestion, { connection });
 
-const worker = new Worker('ingestion', async job => {
-  console.log(`Processing job ${job.id} of type ${job.name}`);
-  const { text, docId } = job.data as { text: string; docId?: string };
-  const actualDocId = docId || uuidv4();
+// Worker to chunk documents and enqueue chunks
+const docWorker = new Worker(
+  config.queueNames.doc,
+  async (job) => {
+    console.log(`Chunking doc job ${job.id}`);
 
-  const chunks = chunkText(actualDocId, text);
-  const embeddings = await embedder.embed(chunks.map(c => c.text));
-  chunks.forEach((c, i) => (c.embedding = embeddings[i]));
-  await store.upsert(chunks);
+    const { docId, text, title, sourceType } = job.data as {
+      docId: string;
+      text: string;
+      title?: string;
+      sourceType?: string;
+    };
 
-  return { docId: actualDocId, chunkCount: chunks.length };
-}, { connection });
+    const chunks = chunkText(docId, text);
 
-worker.on('completed', job => {
-  console.log(`Job ${job.id} completed`);
+    for (const chunk of chunks) {
+      await ingestionQueue.add(config.queueNames.chunk, {
+        ...chunk,
+        title,
+        sourceType,
+      });
+    }
+
+    return { docId, chunkCount: chunks.length };
+  },
+  { connection, concurrency: config.concurrency },
+);
+
+console.log('Worker process started, waiting for jobs...');
+
+docWorker.on('completed', (job) => {
+  console.log(`Doc job ${job.id} completed`);
+});
+
+docWorker.on('failed', (job, err) => {
+  console.error(`Doc job ${job?.id} failed:`, err);
+});
+
+// Worker to embed chunks and upsert to vector store
+const chunkWorker = new Worker(
+  config.queueNames.chunk,
+  async (job) => {
+    console.log(`Embedding chunk job ${job.id}`);
+
+    const chunk = job.data as Chunk;
+
+    const [embedding] = await embedder.embed([chunk.text]);
+
+    chunk.embedding = embedding;
+    await store.upsert([chunk]);
+
+    return { chunkId: chunk.id, docId: chunk.docId };
+  },
+  { connection, concurrency: config.concurrency },
+);
+
+chunkWorker.on('completed', (job) => {
+  console.log(`Chunk job ${job.id} completed`);
+});
+
+chunkWorker.on('failed', (job, err) => {
+  console.error(`Chunk job ${job?.id} failed:`, err);
 });

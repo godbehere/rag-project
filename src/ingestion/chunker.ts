@@ -1,18 +1,42 @@
 import { Chunk } from '../types';
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as uuidv4 } from 'uuid';
 
-export function chunkText(docId: string, text: string, maxTokens = 500, overlap = 50): Chunk[] {
-  const sentences = text.split(/(?<=[\.\?\!\n])\s+/);
+/**
+ * Splits text into chunks by sentences with word overlap.
+ * @param docId - ID of the document for chunk association.
+ * @param text - Full text to chunk.
+ * @param maxChunkLength - Approx max chunk length in characters (default 500).
+ * @param wordOverlap - Number of words to overlap between chunks (default 50).
+ * @returns Array of Chunk objects with id, docId, and chunk text.
+ */
+export function chunkText(
+  docId: string,
+  text: string,
+  maxChunkLength = 500,
+  wordOverlap = 50
+): Chunk[] {
+  const sentences = text.split(/(?<=[.?!\n])\s+/);
   const chunks: Chunk[] = [];
   let buffer = '';
-  for (const s of sentences) {
-    if ((buffer + ' ' + s).length > maxTokens) {
+
+  for (const sentence of sentences) {
+    // If adding this sentence exceeds chunk length, push current chunk and start a new one
+    if ((buffer + ' ' + sentence).trim().length > maxChunkLength) {
       chunks.push({ id: uuidv4(), docId, text: buffer.trim() });
-      buffer = overlap > 0 ? buffer.split(' ').slice(-overlap).join(' ') + ' ' + s : s;
+
+      // Overlap last N words before starting new chunk
+      const bufferWords = buffer.trim().split(' ');
+      const overlapWords = bufferWords.slice(-wordOverlap).join(' ');
+      buffer = overlapWords + ' ' + sentence;
     } else {
-      buffer = buffer ? buffer + ' ' + s : s;
+      buffer = buffer ? buffer + ' ' + sentence : sentence;
     }
   }
-  if (buffer.trim()) chunks.push({ id: uuidv4(), docId, text: buffer.trim() });
+
+  // Push any remaining buffer as last chunk
+  if (buffer.trim()) {
+    chunks.push({ id: uuidv4(), docId, text: buffer.trim() });
+  }
+
   return chunks;
 }
