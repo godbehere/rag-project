@@ -47,6 +47,7 @@ A Retrieval-Augmented Generation (RAG) backend for document ingestion, semantic 
 - `OPENAI_API_KEY` (required): Your OpenAI API key for embeddings and completions.
 - `REDIS_URL`: Redis connection string (default: `redis://localhost:6379` or `redis://redis:6379` in Docker).
 - `QDRANT_URL`: Qdrant connection string (default: `http://localhost:6333` or `http://qdrant:6333` in Docker).
+- `USE_MOCK_EMBEDDINGS`: Set to `true` to use random/mock embeddings for local development or CI. Set to `false` (default) to use real OpenAI embeddings. When using real embeddings, you must provide a valid `OPENAI_API_KEY`.
 
 ## API Usage
 - Ingest documents via `/api/ingest` (see code for details)
