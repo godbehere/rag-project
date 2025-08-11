@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import cheerio from 'cheerio';
+import { load } from 'cheerio';
 
 export async function parseWebsite(url: string): Promise<string> {
   try {
@@ -9,7 +9,7 @@ export async function parseWebsite(url: string): Promise<string> {
     }
     const html = await response.text();
 
-    const $ = cheerio.load(html);
+    const $ = load(html);
     $('script, style, noscript, iframe, meta, link').remove();
     const bodyText = $('body').text();
     const cleanedText = bodyText.replace(/\s+/g, ' ').trim();

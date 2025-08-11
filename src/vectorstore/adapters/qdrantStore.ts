@@ -43,6 +43,7 @@ export class QdrantVectorStore implements VectorStore {
       vector: queryEmbedding,
       limit: topK,
       with_payload: true,
+      score_threshold: 0.7,
     });
     return result.map((r) => ({
       chunk: {

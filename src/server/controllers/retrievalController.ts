@@ -5,6 +5,7 @@ dotenv.config();
 import { store, embedder } from '../../config/vector';
 import { logInfo, logError } from '../../config/logger';
 import { generateWithOpenAI } from '../../llm/openai';
+import { text } from 'stream/consumers';
 
 export async function queryChunks(req: Request, res: Response) {
   try {
@@ -23,6 +24,7 @@ export async function queryChunks(req: Request, res: Response) {
       docId: chunk.docId,
       title: chunk.metadata?.title,
       sourceType: chunk.metadata?.sourceType,
+      // text: chunk.text,
       score,
     }));
     if (!generate) {
