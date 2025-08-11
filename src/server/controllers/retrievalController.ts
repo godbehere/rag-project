@@ -1,11 +1,7 @@
 import { Request, Response } from 'express';
-import dotenv from 'dotenv';
-
-dotenv.config();
 import { store, embedder } from '../../config/vector';
 import { logInfo, logError } from '../../config/logger';
 import { generateWithOpenAI } from '../../llm/openai';
-import { text } from 'stream/consumers';
 
 export async function queryChunks(req: Request, res: Response) {
   try {
