@@ -1,4 +1,5 @@
 import { Chunk } from '../types';
+import { cleanText } from './cleaning';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -15,7 +16,9 @@ export function chunkText(
   maxChunkLength = 500,
   wordOverlap = 50
 ): Chunk[] {
-  const sentences = text.split(/(?<=[.?!\n])\s+/);
+  // Clean the text before chunking
+  const cleaned = cleanText(text);
+  const sentences = cleaned.split(/(?<=[.?!\n])\s+/);
   const chunks: Chunk[] = [];
   let buffer = '';
 

@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import { load } from 'cheerio';
+import { cleanText } from '../ingestion/cleaning';
 
 export async function parseWebsite(url: string): Promise<string> {
   try {
@@ -11,10 +12,8 @@ export async function parseWebsite(url: string): Promise<string> {
 
     const $ = load(html);
     $('script, style, noscript, iframe, meta, link').remove();
-    const bodyText = $('body').text();
-    const cleanedText = bodyText.replace(/\s+/g, ' ').trim();
-
-    return cleanedText;
+  const bodyText = $('body').text();
+    return cleanText(bodyText);
   } catch (error) {
     console.error('Error parsing website:', error);
     throw error;
