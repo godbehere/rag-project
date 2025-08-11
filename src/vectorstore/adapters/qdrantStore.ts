@@ -1,5 +1,6 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { VectorStore, Chunk } from '../../types';
+import { config } from '../../config';
 
 export class QdrantVectorStore implements VectorStore {
   private client: QdrantClient;
@@ -7,7 +8,7 @@ export class QdrantVectorStore implements VectorStore {
   private vectorSize: number;
 
   constructor(collectionName = 'chunks', vectorSize = 1536) {
-    this.client = new QdrantClient({ url: 'http://localhost:6333' });
+    this.client = new QdrantClient({ url: config.qdrantUrl });
     this.collectionName = collectionName;
     this.vectorSize = vectorSize;
   }
