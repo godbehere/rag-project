@@ -7,14 +7,13 @@ import { config } from '../config';
 
 const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
 
-const ingestionQueue = new Queue(config.queueNames.ingestion, { connection });
+console.log('Unified worker process started, waiting for jobs...');
 
-// Worker to chunk documents and enqueue chunks
-const docWorker = new Worker(
+// Single worker for all ingestion jobs (text, file, etc.)
+const ingestionWorker = new Worker(
   config.queueNames.doc,
   async (job) => {
-    console.log(`Chunking doc job ${job.id}`);
-
+    console.log(`[Worker] Processing job ${job.id}`);
     const { docId, text, title, sourceType } = job.data as {
       docId: string;
       text: string;
@@ -22,14 +21,20 @@ const docWorker = new Worker(
       sourceType?: string;
     };
 
+    // Chunk the text
     const chunks = chunkText(docId, text);
+    console.log(`[Worker] Chunked doc ${docId} into ${chunks.length} chunks.`);
 
+    // Embed and upsert each chunk
     for (const chunk of chunks) {
-      await ingestionQueue.add(config.queueNames.chunk, {
+      const [embedding] = await embedder.embed([chunk.text]);
+      const chunkWithMeta: Chunk = {
         ...chunk,
-        title,
-        sourceType,
-      });
+        embedding,
+        metadata: { title, sourceType },
+      };
+      await store.upsert([chunkWithMeta]);
+      console.log(`[Worker] Embedded and upserted chunk ${chunk.id}`);
     }
 
     return { docId, chunkCount: chunks.length };
@@ -37,38 +42,10 @@ const docWorker = new Worker(
   { connection, concurrency: config.concurrency },
 );
 
-console.log('Worker process started, waiting for jobs...');
-
-docWorker.on('completed', (job) => {
-  console.log(`Doc job ${job.id} completed`);
+ingestionWorker.on('completed', (job) => {
+  console.log(`[Worker] Job ${job.id} completed`);
 });
 
-docWorker.on('failed', (job, err) => {
-  console.error(`Doc job ${job?.id} failed:`, err);
-});
-
-// Worker to embed chunks and upsert to vector store
-const chunkWorker = new Worker(
-  config.queueNames.chunk,
-  async (job) => {
-    console.log(`Embedding chunk job ${job.id}`);
-
-    const chunk = job.data as Chunk;
-
-    const [embedding] = await embedder.embed([chunk.text]);
-
-    chunk.embedding = embedding;
-    await store.upsert([chunk]);
-
-    return { chunkId: chunk.id, docId: chunk.docId };
-  },
-  { connection, concurrency: config.concurrency },
-);
-
-chunkWorker.on('completed', (job) => {
-  console.log(`Chunk job ${job.id} completed`);
-});
-
-chunkWorker.on('failed', (job, err) => {
-  console.error(`Chunk job ${job?.id} failed:`, err);
+ingestionWorker.on('failed', (job, err) => {
+  console.error(`[Worker] Job ${job?.id} failed:`, err);
 });

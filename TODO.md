@@ -4,11 +4,11 @@
 - PDF, DOC/DOCX, TXT parsers implemented
 - Website parser implemented (static HTML)
 - Basic ingestion pipeline (chunking, embedding, vector store)
+- Persistent vector store integration (Qdrant)
 
 ## Backlog
 - PPTX parser (deferred)
 
-## In Progress
 - Retrieval API (query endpoint)
 - Refactor to use shared vector store/embedder
 - MVP focus: get ingestion, embedding, retrieval working end-to-end
@@ -29,5 +29,7 @@
   - Improve error handling throughout pipeline
 - Manual End-to-End Testing
   - Ingest a document or website and query for relevant content
-- Persistence
-  - Replace in-memory vector store with persistent DB (optional)
+- Worker Module Improvements
+  - Consider splitting workers for different job types (e.g., file vs. text, chunking vs. embedding) for scaling and specialization
+  - Add more robust error handling, logging, and monitoring to worker module
+  - Support for job retries and dead-letter queues

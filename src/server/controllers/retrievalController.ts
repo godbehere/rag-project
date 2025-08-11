@@ -15,6 +15,9 @@ export async function queryChunks(req: Request, res: Response) {
     logInfo('QueryChunks: Query received', { query, topK });
     const [embedding] = await embedder.embed([query]);
     const results = await store.similaritySearch(embedding, topK);
+    logInfo('Embedding generated for query', { query, embedding });
+    logInfo('QueryChunks: Results found', { count: results.length });
+    logInfo('QueryResults: ', {results: results});
     // Return chunk metadata (id, docId, text, title, sourceType, score, etc.)
     const formatted = results.map(({ chunk, score }) => ({
       id: chunk.id,

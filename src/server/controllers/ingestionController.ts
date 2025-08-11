@@ -77,7 +77,7 @@ export async function ingestFilesAndUrls(req: Request, res: Response) {
     const fileTexts = await Promise.all(
       files.map(async (file) => {
         try {
-          const text = await parseFile(file.path);
+          const text = await parseFile(file.path, file.originalname);
           return { docId: uuidv4(), text, filePath: file.path };
         } catch (err) {
           return { error: `Failed to parse file: ${file.originalname}` };
@@ -99,6 +99,15 @@ export async function ingestFilesAndUrls(req: Request, res: Response) {
         }
       })
     );
+
+    logInfo('File texts and URL texts parsed', {
+      fileCount: fileTexts.length,
+      urlCount: urlTexts.length,
+      errors: [...fileTexts, ...urlTexts].filter((d) => 'error' in d),
+      total: fileTexts.length + urlTexts.length,
+      files: fileTexts.map((f) => f.docId),
+      urls: urlTexts.map((u) => u.docId),
+    });
 
     // Filter out failed parses
     const allDocs = [...fileTexts, ...urlTexts].filter((d) => !('error' in d));
