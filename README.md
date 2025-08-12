@@ -90,6 +90,10 @@ After installing via npm you can run the following commands:
    # or interactively
    rag-cli query
    ```
+- Clear the vector store:
+   ```bash
+   rag-cli clear-vectorstore
+   ```
 - Run interactive config setup:
    ```bash
    rag-cli init
