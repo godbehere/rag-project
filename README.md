@@ -13,6 +13,7 @@ A Retrieval-Augmented Generation (RAG) backend for document ingestion, semantic 
 ## Requirements
 - Node.js 20+
 - npm
+- Redis & Qdrant instances (docker option will handle this)
 - Docker (optional, for containerized setup)
 - OpenAI API key (for embedding and generation)
 
@@ -52,6 +53,49 @@ A Retrieval-Augmented Generation (RAG) backend for document ingestion, semantic 
 ## API Usage
 - Ingest documents via `/api/ingest` (see code for details)
 - Query with `/api/query`
+
+## CLI Usage
+
+After installing via npm you can run the following commands:
+
+- Start the API server:
+   ```bash
+   rag-cli start:server
+   ```
+- Start the worker:
+   ```bash
+   rag-cli start:worker
+   ```
+- Start all services with Docker Compose:
+   ```bash
+   rag-cli up
+   ```
+- Ingest plain text:
+   ```bash
+   rag-cli ingest:text --text "Your text here"
+   # or via stdin
+   rag-cli ingest:text
+   ```
+- Ingest files:
+   ```bash
+   rag-cli ingest:file --file path/to/file1 --file path/to/file2
+   ```
+- Ingest URLs:
+   ```bash
+   rag-cli ingest:url --url https://example.com --url https://another.com
+   ```
+- Query the vector store:
+   ```bash
+   rag-cli query --query "What is RAG?"
+   # or interactively
+   rag-cli query
+   ```
+- Run interactive config setup:
+   ```bash
+   rag-cli init
+   ```
+
+If you would like to use the cli during development start by building the project (`npm run build`), then you can use the CLI but you must add `npx` before the command (`npx rag-cli up`)
 
 ## Contributing
 - Fork, branch, and submit PRs.
