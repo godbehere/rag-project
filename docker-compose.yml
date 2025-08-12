@@ -1,12 +1,14 @@
 version: '3.8'
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: rag-server:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     container_name: rag-app
     ports:
       - "3000:3000"
+    env_file: .env.docker.server
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -16,8 +18,8 @@ services:
     depends_on:
       - redis
       - qdrant
-    volumes:
-      - .:/usr/src/app
+    # volumes:
+    #   - .:/usr/src/app
     command: npm run dev
 
   worker:

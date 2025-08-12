@@ -1,3 +1,8 @@
+# Ignore local/prod Dockerfiles and build scripts
+Dockerfile.prod.server
+Dockerfile.prod.worker
+Makefile
+
 # Node modules
 node_modules/
 
@@ -56,6 +61,10 @@ temp/
 .env.production
 .env.local
 .env.*.local
+
+# Docker Environments
+.env.docker.server
+.env.docker.worker
 
 # VSCode settings
 .vscode/
