@@ -60,11 +60,7 @@ temp/
 .env.test
 .env.production
 .env.local
-.env.*.local
-
-# Docker Environments
-.env.docker.server
-.env.docker.worker
+.env.*
 
 # VSCode settings
 .vscode/
