@@ -2,6 +2,9 @@
   "name": "ts-rag",
   "version": "0.1.0",
   "main": "dist/index.js",
+  "bin": {
+    "rag-cli": "./dist/cli.js"
+  },
   "scripts": {
     "dev": "ts-node-dev --respawn src/server/index.ts",
     "worker": "ts-node src/queue/worker.ts",
