@@ -5,6 +5,7 @@ import readline from 'readline';
 import path from 'path';
 import FormData from 'form-data';
 import dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -69,7 +70,7 @@ async function ingestUrlCLI(urls: string[]) {
   const result = await res.json();
   console.log('URL ingestion result:', result);
 }
-import fetch from 'node-fetch';
+
 async function ingestTextCLI(text?: string) {
   if (!text) {
     // Read from stdin
@@ -149,6 +150,35 @@ async function runInit() {
   }
   fs.writeFileSync('.env', envStr);
   console.log('.env file written.');
+}
+
+async function clearVectorstore() {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const ask = (q: string) => new Promise<string>(resolve => rl.question(q, resolve));
+    const first = await ask('Are you sure you want to clear the vector store? (y/N): ');
+    if (first.trim().toLowerCase() !== 'y') {
+        console.log('Aborted.');
+        rl.close();
+        return;
+    }
+    const second = await ask('Are you REALLY sure? This cannot be undone. (y/N): ');
+    if (second.trim().toLowerCase() !== 'y') {
+        console.log('Aborted.');
+        rl.close();
+        return;
+    }
+    rl.close();
+    const res = await fetch('http://localhost:3000/api/vectorstore/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) {
+        const err = await res.text();
+        console.error('Clear vector store failed:', err);
+        process.exit(1);
+    }
+    const result = await res.json();
+    console.log('Vector store cleared:', result);
 }
 
 function checkEnvOrPromptInit(required: string[], cmd: string | undefined) {
@@ -238,10 +268,10 @@ if (!checkEnvOrPromptInit(requiredEnv, cmd)) {
     case 'status':
         spawn('docker', ['compose', 'ps'], { stdio: 'inherit' });
         break;
-    case 'clear-vectorstore':
-        // TODO: Implement API call to clear vectorstore
-        console.log('Not yet implemented.');
+    case 'clear-vectorstore': {
+        clearVectorstore();
         break;
+    }
     case 'init':
         runInit();
         break;
