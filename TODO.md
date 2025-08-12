@@ -5,17 +5,14 @@
 - Website parser implemented (static HTML)
 - Basic ingestion pipeline (chunking, embedding, vector store)
 - Persistent vector store integration (Qdrant)
+- Retrieval API (query endpoint)
+- Config + Env Management (centralize config, validate env vars)
 
 ## Backlog
-- PPTX parser (deferred)
-- Vector Store Multi-Tenancy/Session Management
-  - Add support for per-user and per-session vector isolation (payload filtering or per-collection)
-  - Require userId/sessionId in API and filter upserts/searches accordingly
-  - Add cleanup/expiration logic for old sessions (optional)
-
-- Retrieval API (query endpoint)
 - MVP focus: get ingestion, embedding, retrieval working end-to-end
-- Config + Env Management (centralize config, validate env vars)
+- PPTX parser (deferred)
+- Page-by-page PDF ingestion for large files (streaming or paginated parsing)
+- Progress reporting for long-running ingestion jobs (API and/or logs)
 - Vector Store Multi-Tenancy/Session Management
   - Add support for per-user and per-session vector isolation (payload filtering or per-collection)
   - Require userId/sessionId in API and filter upserts/searches accordingly
@@ -37,8 +34,7 @@
 - LLM Provider Extensibility
 - Rate Limiting & User API Keys
 - Citations
-- Manual End-to-End Testing
-  - Ingest a document or website and query for relevant content
+  - Add sources and page numbers to citations
 - Worker Module Improvements
   - Consider splitting workers for different job types (e.g., file vs. text, chunking vs. embedding) for scaling and specialization
   - Add more robust error handling, logging, and monitoring to worker module
