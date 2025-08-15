@@ -16,7 +16,7 @@ curl -X POST http://localhost:3000/api/ingest/text \
   -H "Content-Type: application/json" \
   -d '{
     "text": "This is a test document for ingestion.",
-    "title": "Test Doc",
+    "source": "Test Doc",
     "sourceType": "txt"
   }'
 ```
@@ -91,7 +91,7 @@ curl -X POST http://localhost:3000/api/query \
     {
       "id": "chunk-uuid",
       "docId": "doc-uuid",
-      "title": "Test Doc",
+      "source": "Test Doc",
       "sourceType": "txt",
       "score": 0.92
     }
@@ -108,7 +108,7 @@ curl -X POST http://localhost:3000/api/query \
     {
       "id": "chunk-uuid",
       "docId": "doc-uuid",
-      "title": "Test Doc",
+      "source": "Test Doc",
       "sourceType": "txt",
       "score": 0.92
     }

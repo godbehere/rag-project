@@ -2,7 +2,7 @@ export type DocSourceType = 'pdf' | 'doc' | 'docx' | 'txt' | 'pptx' | 'website';
 
 export interface DocumentMeta {
   id: string; // uuid
-  title?: string;
+  source?: string;
   sourceType: DocSourceType;
   sourceUrl?: string; // if website or original storage url
   uploadedAt: string; // ISO string

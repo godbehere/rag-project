@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn src/server/index.ts",
-    "worker": "ts-node src/queue/worker.ts",
+    "worker": "ts-node-dev --respawn src/queue/worker.ts",
     "build": "tsc -p .",
     "start": "node dist/server/index.js"
   },

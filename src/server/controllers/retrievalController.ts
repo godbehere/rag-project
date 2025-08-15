@@ -18,7 +18,7 @@ export async function queryChunks(req: Request, res: Response) {
     const citations = results.map(({ chunk, score }) => ({
       id: chunk.id,
       docId: chunk.docId,
-      title: chunk.metadata?.title,
+      source: chunk.metadata?.source,
       sourceType: chunk.metadata?.sourceType,
       // text: chunk.text,
       score,

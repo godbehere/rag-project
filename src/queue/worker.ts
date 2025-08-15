@@ -4,37 +4,40 @@ import { chunkText } from '../ingestion/chunker';
 import { store, embedder } from '../config/vector';
 import { Chunk } from '../types';
 import { config } from '../config';
+import { logDebug, logInfo, logError } from '../config/logger';
 
 const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
 
 console.log('Unified worker process started, waiting for jobs...');
+console.log(`Use mock embeddings: ${config.useMockEmbeddings}`);
 
 // Single worker for all ingestion jobs (text, file, etc.)
 const ingestionWorker = new Worker(
   config.queueNames.doc,
   async (job) => {
     console.log(`[Worker] Processing job ${job.id}`);
-    const { docId, text, title, sourceType } = job.data as {
+    const { docId, text, source, sourceType } = job.data as {
       docId: string;
       text: string;
-      title?: string;
+      source?: string;
       sourceType?: string;
     };
 
     // Chunk the text
     const chunks = chunkText(docId, text);
     console.log(`[Worker] Chunked doc ${docId} into ${chunks.length} chunks.`);
-
+    
     // Embed and upsert each chunk
     for (const chunk of chunks) {
       const [embedding] = await embedder.embed([chunk.text]);
       const chunkWithMeta: Chunk = {
         ...chunk,
         embedding,
-        metadata: { title, sourceType },
+        metadata: { source, sourceType },
       };
       await store.upsert([chunkWithMeta]);
-      console.log(`[Worker] Embedded and upserted chunk ${chunk.id}`);
+      logDebug('[DEBUG] Embedded chunk', { chunkWithMeta });
+      logInfo('[Worker]: Embedded and upserted chunk', { chunkId: chunk.id, docId, source, sourceType });
     }
 
     return { docId, chunkCount: chunks.length };

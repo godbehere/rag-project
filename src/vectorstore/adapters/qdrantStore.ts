@@ -31,7 +31,7 @@ export class QdrantVectorStore implements VectorStore {
         payload: {
           docId: chunk.docId,
           text: chunk.text,
-          title: chunk.metadata?.title,
+          source: chunk.metadata?.source,
           sourceType: chunk.metadata?.sourceType,
         },
       })),
@@ -53,7 +53,7 @@ export class QdrantVectorStore implements VectorStore {
         text: r.payload?.text as string,
         embedding: queryEmbedding,
         metadata: {
-          title: r.payload?.title as string,
+          source: r.payload?.source as string,
           sourceType: r.payload?.sourceType as string,
         },
       },

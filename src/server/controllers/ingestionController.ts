@@ -14,10 +14,10 @@ export const ingestionFilesMiddleware = upload.array('files');
 
 export async function ingestText(req: Request, res: Response) {
   try {
-    const { text, docId, title, sourceType } = req.body as {
+    const { text, docId, source, sourceType } = req.body as {
       text: string;
       docId?: string;
-      title?: string;
+      source?: string;
       sourceType?: string;
     };
 
@@ -28,12 +28,12 @@ export async function ingestText(req: Request, res: Response) {
 
     const newDocId = docId || uuidv4();
 
-    logInfo('IngestText: Queueing doc', { docId: newDocId, title, sourceType });
+    logInfo('IngestText: Queueing doc', { docId: newDocId, source, sourceType });
     
     await ingestionQueue.add('ingest-doc', {
       docId: newDocId,
       text,
-      title,
+      source,
       sourceType: sourceType || 'txt',
     });
 
@@ -78,7 +78,7 @@ export async function ingestFilesAndUrls(req: Request, res: Response) {
       files.map(async (file) => {
         try {
           const text = await parseFile(file.path, file.originalname);
-          return { docId: uuidv4(), text, filePath: file.path };
+          return { docId: uuidv4(), text, filePath: file.path, source: file.originalname };
         } catch (err) {
           return { error: `Failed to parse file: ${file.originalname}` };
         } finally {
@@ -93,7 +93,7 @@ export async function ingestFilesAndUrls(req: Request, res: Response) {
       validUrls.map(async (url: string) => {
         try {
           const text = await parseWebsite(url);
-          return { docId: uuidv4(), text };
+          return { docId: uuidv4(), text, source: url };
         } catch (err) {
           return { error: `Failed to parse URL: ${url}` };
         }
@@ -114,11 +114,12 @@ export async function ingestFilesAndUrls(req: Request, res: Response) {
     const errors = [...fileTexts, ...urlTexts].filter((d) => 'error' in d).map((d) => d.error);
 
     // Enqueue one job per document with full text
-    for (const { docId, text } of allDocs) {
+    for (const { docId, text, source } of allDocs) {
       logInfo('IngestFilesAndUrls: Queueing doc', { docId });
       await ingestionQueue.add('ingest-doc', {
         docId,
         text,
+        source,
         sourceType: 'file/url',
       });
     }

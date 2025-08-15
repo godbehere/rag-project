@@ -23,4 +23,5 @@ export const config = {
 	port: parseInt(process.env.PORT || '3000', 10),
 	concurrency: parseInt(process.env.WORKER_CONCURRENCY || '2', 10),
 	useMockEmbeddings: process.env.USE_MOCK_EMBEDDINGS === 'true',
+	logLevel: process.env.LOG_LEVEL || 'info',
 };
