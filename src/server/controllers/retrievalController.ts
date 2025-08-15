@@ -5,7 +5,7 @@ import { generateWithOpenAI } from '../../llm/openai';
 
 export async function queryChunks(req: Request, res: Response) {
   try {
-    const { query, topK = 15, generate = false, apiKey } = req.body as { query: string; topK?: number; generate?: boolean; apiKey?: string };
+    const { query, topK = 5, generate = false, apiKey } = req.body as { query: string; topK?: number; generate?: boolean; apiKey?: string };
     if (!query || typeof query !== 'string' || !query.trim()) {
       logError('QueryChunks: Missing or invalid query field', req.body);
       return res.status(400).json({ error: 'Missing or invalid query field' });
@@ -20,7 +20,7 @@ export async function queryChunks(req: Request, res: Response) {
       docId: chunk.docId,
       source: chunk.metadata?.source,
       sourceType: chunk.metadata?.sourceType,
-      // text: chunk.text,
+      text: chunk.text,
       score,
     }));
     if (!generate) {
