@@ -12,6 +12,7 @@ services:
       - PORT=3000
       - REDIS_URL=redis://redis:6379
       - QDRANT_URL=http://qdrant:6333
+      - PYCLEANER_URL=http://pycleaner:5000
       # Add other env vars as needed
     depends_on:
       - redis
@@ -29,12 +30,21 @@ services:
       - NODE_ENV=development
       - REDIS_URL=redis://redis:6379
       - QDRANT_URL=http://qdrant:6333
+      - PYCLEANER_URL=http://pycleaner:5000
     depends_on:
       - redis
       - qdrant
     volumes:
       - .:/usr/src/app
     command: npm run worker
+
+  pycleaner:
+    build:
+      context: pycleaner/.
+      dockerfile: Dockerfile
+    container_name: rag-pycleaner
+    ports:
+      - "5000:5000"
 
   redis:
     image: redis:7-alpine
