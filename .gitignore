@@ -1,7 +1,7 @@
 # Ignore local/prod Dockerfiles and build scripts
-Dockerfile.prod.server
-Dockerfile.prod.worker
+Dockerfile.prod.*
 Makefile
+docker-compose.prod.yml
 
 # Node modules
 node_modules/
