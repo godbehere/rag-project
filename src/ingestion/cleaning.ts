@@ -1,3 +1,12 @@
+/**
+ * Removes Wikipedia-style annotations (e.g., [0], [12]) from text.
+ * @param text Input text
+ * @returns Text with annotations removed
+ */
+export function removeWikipediaAnnotations(text: string): string {
+  // Remove [number] patterns
+  return text.replace(/\[\d+\]/g, '');
+}
 import nlp from 'compromise';
 
 // Simple stopword/filler list (expand as needed)
@@ -23,7 +32,9 @@ function isURLorBoilerplate(s: string): boolean {
  * @returns Cleaned text
  */
 export function cleanText(text: string): string {
-  let cleaned = text.replace(/[\x00-\x1F\x7F]+/g, ' '); // Remove non-printable
+  // Remove Wikipedia annotations first
+  let cleaned = removeWikipediaAnnotations(text);
+  cleaned = cleaned.replace(/[\x00-\x1F\x7F]+/g, ' '); // Remove non-printable
   cleaned = cleaned.replace(/\s+/g, ' ').trim(); // Collapse whitespace
 
   // Use compromise for further normalization
